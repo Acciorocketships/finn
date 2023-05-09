@@ -3,7 +3,7 @@ from mlp import MonotonicNetwork
 
 class Finn(torch.nn.Module):
 
-	def __init__(self, dim, r_inv=lambda x: x, r_jac_det=lambda u: 1, u_lim_lower=None, u_lim_upper=None, area=1., monotonic=True):
+	def __init__(self, dim, r_inv=lambda x: x, r_jac_det=lambda u: 1, u_lim_lower=None, u_lim_upper=None, area=1.):
 		'''
 		:param dim: dimension of the input (output dim is 1)
 		:param r_inv: defines the limits of integration with u substitution u = r_inv(x)

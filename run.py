@@ -59,5 +59,5 @@ def run2d():
 
 
 if __name__ == "__main__":
-	run2d()
+	run1d()
 

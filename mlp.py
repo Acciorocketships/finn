@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 from torch import Tensor
 import numpy as np
+from activation import IntegralActivation
 
 
 def build_mlp(input_dim, output_dim, nlayers=1, midmult=1., **kwargs):
@@ -29,19 +30,16 @@ class MonotonicNetwork(nn.Module):
 
 	def __init__(self, input_dim, output_dim, k=4):
 		super().__init__()
-		# self.main_net = build_mlp(input_dim, output_dim, nlayers=4, midmult=2., monotonic=True, activation=nn.Softplus, last_activation=nn.Softplus)
-		self.ind_nets = nn.ModuleList([
-				build_mlp(input_dim, output_dim, nlayers=4, midmult=4., monotonic=True, activation=nn.Softplus, last_activation=nn.Softplus)
+		self.nets = nn.ModuleList([
+				build_mlp(input_dim, output_dim, nlayers=4, midmult=4., monotonic=True, activation=IntegralActivation, last_activation=None, activation_kwargs={"n":input_dim})
 			for _ in range(k)])
 		def ind_forward(x):
-			out = [self.ind_nets[i](x) for i in range(k)]
+			out = [self.nets[i](x) for i in range(k)]
 			return sum(out)
-		self.ind_nets.forward = ind_forward
+		self.nets.forward = ind_forward
 
 	def forward(self, x):
-		# main = self.main_net(x)
-		ind = self.ind_nets(x)
-		return ind
+		return self.nets(x)
 
 
 class MLP(nn.Module):
@@ -53,6 +51,7 @@ class MLP(nn.Module):
 		monotonic=False,
 		activation=nn.Mish,
 		last_activation=None,
+		activation_kwargs={},
 	):
 		super(MLP, self).__init__()
 		layers = []
@@ -66,10 +65,10 @@ class MLP(nn.Module):
 					layers.append(nn.BatchNorm(layer_sizes[i + 1]))
 				if layernorm:
 					layers.append(nn.LayerNorm(layer_sizes[i + 1]))
-				layers.append(activation())
+				layers.append(activation(**activation_kwargs))
 			elif i == len(layer_sizes) - 2:
 				if last_activation is not None:
-					layers.append(last_activation())
+					layers.append(last_activation(**activation_kwargs))
 		self.net = nn.Sequential(*layers)
 
 	def forward(self, X):
