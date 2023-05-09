@@ -12,7 +12,7 @@ def run():
 	vis_lower = u_lim_lower
 	vis_upper = u_lim_upper
 	vis_step = 0.1
-	area = 1.
+	area = 2.
 	f = Finn(
 		dim=dim, 
 		u_lim_lower=u_lim_lower, 
@@ -21,15 +21,16 @@ def run():
 		)
 
 	# Ground Truth
-	sigma_x = 1.
-	sigma_y = 1.
-	mu_x = 0.
-	mu_y = 0.5
-	g = lambda x: (1 / (2 * torch.pi * sigma_x * sigma_y)) * torch.exp(
-		-0.5 * (
-			((x[...,0] - mu_x) / sigma_x) ** 2 + 
-			((x[...,1] - mu_y) / sigma_y) ** 2
-		))
+	def create_g(c, sigma_x, sigma_y, mu_x, mu_y):
+		g = lambda x: (c / (2 * torch.pi * sigma_x * sigma_y)) * torch.exp(
+			-0.5 * (
+				((x[...,0] - mu_x) / sigma_x) ** 2 +
+				((x[...,1] - mu_y) / sigma_y) ** 2
+			))
+		return g
+	g0 = create_g(1, 1., 1., 1., 1.)
+	g1 = create_g(1, 1., 1., -2., 0.)
+	g = lambda x: g0(x) + g1(x)
 
 	# Training Init
 	batch = 64
