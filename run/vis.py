@@ -1,8 +1,7 @@
-import numpy as np
-
-from Visualiser2D import Visualiser2D
-from Finn import Finn
+from finn import Visualiser2D
+from finn import Finn
 import torch
+
 
 def run1d():
 	steps = 1000

@@ -1,8 +1,8 @@
 import torch.nn as nn
 import torch
 from torch import Tensor
-import numpy as np
-from activation import IntegralActivation
+import math
+from finn.activation import IntegralActivation
 
 
 def build_mlp(input_dim, output_dim, nlayers=1, midmult=1., **kwargs):
@@ -11,19 +11,22 @@ def build_mlp(input_dim, output_dim, nlayers=1, midmult=1., **kwargs):
 	return mlp
 
 
-def layergen(input_dim, output_dim, nlayers=1, midmult=1.0):
-	midlayersize = midmult * (input_dim + output_dim) // 2
-	midlayersize = max(midlayersize, 1)
-	nlayers += 2
-	layers1 = np.around(
-		np.logspace(np.log10(input_dim), np.log10(midlayersize), num=(nlayers) // 2)
-	).astype(int)
-	layers2 = np.around(
-		np.logspace(
-			np.log10(midlayersize), np.log10(output_dim), num=(nlayers + 1) // 2
-		)
-	).astype(int)[1:]
-	return list(np.concatenate([layers1, layers2]))
+def layergen(input_dim, output_dim, nlayers=1, hidden_dim=None, midmult=1.0):
+	if hidden_dim is None:
+		midlayersize = midmult * (input_dim + output_dim) // 2
+		midlayersize = max(midlayersize, 1)
+		nlayers += 2
+		layers1 = torch.round(
+			torch.logspace(math.log10(input_dim), math.log10(midlayersize), steps=(nlayers) // 2)
+		).int()
+		layers2 = torch.round(
+			torch.logspace(
+				math.log10(midlayersize), math.log10(output_dim), steps=(nlayers + 1) // 2
+			)
+		).int()[1:]
+		return torch.cat([layers1, layers2]).tolist()
+	else:
+		return [input_dim] + ([hidden_dim] * (nlayers-1)) + [output_dim]
 
 
 class MonotonicNetwork(nn.Module):

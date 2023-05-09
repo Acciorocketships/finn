@@ -1,7 +1,6 @@
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import matplotlib.pyplot as plt
-import numpy as np
 import torch
 
 
@@ -43,7 +42,7 @@ class Visualiser2D:
 		elif ninputs == 1:
 			if self.ax is None:
 				self.ax = plt.axes()
-			x = torch.tensor(np.arange(lim[0],lim[1],step))
+			x = torch.arange(lim[0],lim[1],step)
 			x = x.float().view(-1, 1)
 			z = func(x)
 			x = x.detach().numpy()

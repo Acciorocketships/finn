@@ -30,12 +30,11 @@ class IntegralActivation(torch.nn.Module):
 		return self.f(x)
 
 
-
 ## Tests ##
 
 
 def test0():
-	from Visualiser2D import Visualiser2D
+	from visualiser import Visualiser2D
 	vis = Visualiser2D()
 	x_ = sympy.Symbol('x')
 	erf = (sympy.functions.special.error_functions.erf(x_) + 1) / 2
@@ -47,7 +46,7 @@ def test0():
 
 
 def test1():
-	from Visualiser2D import Visualiser2D
+	from visualiser import Visualiser2D
 	vis = Visualiser2D()
 	f = IntegralActivation(1)
 	vis.update(f, ninputs=1, lim=[-2, 2], step=0.05)

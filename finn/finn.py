@@ -1,5 +1,5 @@
 import torch
-from mlp import MonotonicNetwork
+from finn.mlp import MonotonicNetwork
 
 class Finn(torch.nn.Module):
 
