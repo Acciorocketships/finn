@@ -13,3 +13,35 @@ While FINN can be used in many applications, the two most prominent use cases ar
 Application (1) allows FINN to function as an alternative to Normalising Flows, parameterising arbitrary probability distributions.
 
 Application (2) enables the instant calculation of metrics which include an integral. For example, consider a vector-valued network v = f(x). If we wish to impose the constraint ∫||f(x)||dx = ε, then we can use FINN to separately learn the magnitude m = g(x). Then, we can scale the vector v by the learned magnitude: v' = m / ||v||. This guarantees that the integral of the magnitude of v' over the entire domain equals ε. FINN can also be used to impose an inequality constraint, if instead we wish to enforce ∫||f(x)||dx ≤ ε.
+
+## Installation
+
+```bash
+cd finn
+pip install -e .
+```
+
+## Example
+
+```python
+area = 10
+dim = 2
+u_lim_lower = torch.tensor([-2, -2])
+u_lim_upper = torch.tensor([2, 2])
+f = Finn(
+  dim=dim, 
+  u_lim_lower=u_lim_lower, 
+  u_lim_upper=u_lim_upper, 
+  area=area, 
+  )
+steps = 1001
+x = torch.linspace(u_lim_lower[0], u_lim_upper[0], steps)
+y = torch.linspace(u_lim_lower[1], u_lim_upper[1], steps)
+x, y = torch.meshgrid(x, y)
+v = torch.stack([x.reshape(steps*steps), y.reshape(steps*steps)], dim=1)
+z = f(v)
+dx = x[1,0] - x[0,0]
+dy = y[0,1] - y[0,0]
+integral = torch.sum(z) * (dx * dy)
+print("integral:", integral) # should equal the user-specified area
+```
