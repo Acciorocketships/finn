@@ -5,7 +5,7 @@ setup(
     name="finn",
     version="0.0.1",
     packages=find_packages(),
-    install_requires=["torch", "matplotlib", "sympy", "sympytorch"],
+    install_requires=["torch", "sympy", "sympytorch"],
     author="Ryan Kortvelesy",
     author_email="rk627@cam.ac.uk",
     description="A Fixed Integral Neural Network",

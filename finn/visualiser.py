@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import torch
 
 
-class Visualiser2D:
+class Visualiser:
 
 	def __init__(self, ax=None):
 		self.ax = ax
@@ -57,6 +57,6 @@ class Visualiser2D:
 
 
 if __name__ == "__main__":
-	vis = Visualiser2D()
+	vis = Visualiser()
 	func = lambda x: x[:,0]**2 + x[:,1]
 	vis.update(func)

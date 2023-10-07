@@ -1,4 +1,4 @@
-from finn import Visualiser2D
+from finn import Visualiser
 from finn import Finn
 import torch
 
@@ -6,17 +6,19 @@ def run():
 
 	# Init
 	dim = 2
-	u_lim_lower = torch.tensor([-3,-3])
-	u_lim_upper = torch.tensor([3,3])
-	vis_lower = u_lim_lower
-	vis_upper = u_lim_upper
+	x_lim_lower = torch.tensor([-3,-3])
+	x_lim_upper = torch.tensor([3,3])
+	vis_lower = x_lim_lower
+	vis_upper = x_lim_upper
 	vis_step = 0.1
-	area = 2.
+	area = 3.
 	f = Finn(
 		dim=dim, 
-		u_lim_lower=u_lim_lower, 
-		u_lim_upper=u_lim_upper, 
-		area=area
+		pos=True,
+		area=area,
+		condition=lambda a: a > area,
+		x_lim_lower=x_lim_lower, 
+		x_lim_upper=x_lim_upper, 
 		)
 
 	# Ground Truth
@@ -35,14 +37,14 @@ def run():
 	batch = 64
 	optim = torch.optim.Adam(f.parameters(), lr=1e-3)
 	loss_fn = torch.nn.MSELoss()
-	vis = Visualiser2D()
+	vis = Visualiser()
 
 	# Training
 	for it in range(10000):
 		optim.zero_grad()
 		x = 6*(torch.rand(batch, dim)-0.5)
 
-		yhat = f(x)
+		yhat = f(x).squeeze(-1)
 		y = g(x)
 		
 		loss = loss_fn(yhat, y)

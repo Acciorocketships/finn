@@ -1,4 +1,4 @@
 from finn.finn import Finn
-from finn.visualiser import Visualiser2D
+from finn.visualiser import Visualiser
 from finn.activation import IntegralActivation
-from finn.mlp import MonotonicNetwork
+from finn.mlp import IntegralNetwork
