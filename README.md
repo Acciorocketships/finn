@@ -36,8 +36,8 @@ f = Finn(
   dim=1,
   condition=condition,
   area=area,
-  x_lim_lower=x_lim_lower*torch.ones(dim),
-  x_lim_upper=x_lim_upper*torch.ones(dim),
+  x_lim_lower=x_lim_lower*torch.ones(1),
+  x_lim_upper=x_lim_upper*torch.ones(1),
 )
 x = torch.linspace(x_lim_lower, x_lim_upper, steps).unsqueeze(1)
 y = f(x)
