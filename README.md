@@ -27,19 +27,19 @@ pip install -e .
 ## Example
 
 ```python
-dim = 1
+steps = 1000
 x_lim_lower = -1.
 x_lim_upper = 1.
 area = 1.
 condition = lambda area: True
 f = Finn(
-  dim=dim,
+  dim=1,
   condition=condition,
   area=area,
   x_lim_lower=x_lim_lower*torch.ones(dim),
   x_lim_upper=x_lim_upper*torch.ones(dim),
 )
-x = torch.linspace(x_lim_lower, x_lim_upper, steps).unsqueeze(1).expand(-1, dim)
+x = torch.linspace(x_lim_lower, x_lim_upper, steps).unsqueeze(1)
 y = f(x)
 dx = x[1,0] - x[0,0]
 integral = torch.sum(y) * dx
