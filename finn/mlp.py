@@ -1,8 +1,9 @@
-import torch.nn as nn
-import torch
-from torch import Tensor
 import math
+
+import torch
+import torch.nn as nn
 from finn.activation import IntegralActivation
+from torch import Tensor
 
 
 def build_mlp(input_dim, output_dim, nlayers=1, midmult=1., **kwargs):
@@ -44,13 +45,9 @@ class IntegralNetwork(nn.Module):
 						  activation_kwargs={"n":input_dim}
 						  )
 			for _ in range(k)])
-		def ind_forward(x):
-			out = [self.nets[i](x) for i in range(k)]
-			return sum(out)
-		self.nets.forward = ind_forward
 
 	def forward(self, x):
-		return self.nets(x)
+		return sum(net(x) for net in self.nets)
 
 
 # class MLP(nn.Module):
