@@ -1,5 +1,6 @@
 import torch
 from finn.mlp import IntegralNetwork
+import time
 
 class Finn(torch.nn.Module):
 
@@ -41,11 +42,11 @@ class Finn(torch.nn.Module):
 
 	def differentiate(self, x):
 		x.requires_grad_(True)
-		y = self.F(x)
+		xi = [x[...,i] for i in range(x.shape[-1])]
+		y = self.F(torch.stack(xi, dim=-1))
 		last_dy = y
 		for i in range(self.dim):
-			dy_all = torch.autograd.grad(last_dy.sum(), x, retain_graph=True, create_graph=True)[0]
-			last_dy = select_index(dy_all, i, -1).unsqueeze(-1)
+			last_dy = torch.autograd.grad(last_dy.sum(), xi[i], retain_graph=True, create_graph=True)[0]
 		return last_dy
 
 
@@ -80,10 +81,3 @@ class Finn(torch.nn.Module):
 			pts[:,i] = xi_lim.repeat_interleave(rep_int_len).repeat(rep_len)
 			eval_sign *= torch.tensor([-1, 1]).repeat_interleave(rep_int_len).repeat(rep_len)
 		return pts, eval_sign
-
-
-
-def select_index(src, idx, dim):
-	idx_list = [slice(None)] * len(src.shape)
-	idx_list[dim] = idx
-	return src.__getitem__(idx_list)
