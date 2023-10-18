@@ -1,6 +1,6 @@
-import torch
 import sympy
 import sympytorch
+import torch
 
 
 class IntegralActivation(torch.nn.Module):
@@ -22,7 +22,7 @@ class IntegralActivation(torch.nn.Module):
 		for _ in range(n-1):
 			erfi = sympy.integrate(erfi, x_)
 		act = sympytorch.SymPyModule(expressions=[erfi], extra_funcs={sympy.core.numbers.Pi: lambda: torch.pi})
-		f = lambda x: act(x=x)
+		f = lambda x: act(x=x).squeeze(-1)
 		return f
 
 
