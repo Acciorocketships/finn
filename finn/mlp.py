@@ -40,7 +40,7 @@ class IntegralNetwork(nn.Module):
 						  nlayers=4, 
 						  midmult=4., 
 						  layer_type=LinearAbs if pos else nn.Linear, 
-						  activation=IntegralActivation, 
+						  activation=IntegralActivation if pos else nn.Mish,
 						  last_activation=None, 
 						  activation_kwargs={"n":input_dim}
 						  )
@@ -86,7 +86,6 @@ class MLP(nn.Module):
 	def __init__(
 		self,
 		layer_sizes,
-		batchnorm=False,
 		activation=nn.Mish,
 		last_activation=None,
 		layer_type=nn.Linear,
@@ -94,15 +93,17 @@ class MLP(nn.Module):
 	):
 		super(MLP, self).__init__()
 		layers = []
+		if activation == IntegralActivation:
+			activation_func = activation(**activation_kwargs)
+		else:
+			activation_func = activation()
 		for i in range(len(layer_sizes) - 1):
 			layers.append(layer_type(layer_sizes[i], layer_sizes[i + 1]))
 			if i < len(layer_sizes) - 2:
-				if batchnorm:
-					layers.append(BatchNorm(layer_sizes[i + 1]))
-				layers.append(activation(**activation_kwargs))
+				layers.append(activation_func)
 			elif i == len(layer_sizes) - 2:
 				if last_activation is not None:
-					layers.append(last_activation(**activation_kwargs))
+					layers.append(last_activation())
 		self.net = nn.Sequential(*layers)
 
 	def forward(self, x):
