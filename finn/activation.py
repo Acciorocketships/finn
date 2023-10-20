@@ -1,57 +1,102 @@
 import sympy
 import sympytorch
 import torch
-
+from torch.func import grad
+import dill
+import os
 
 class IntegralActivation(torch.nn.Module):
-
 	def __init__(self, n):
 		super().__init__()
-		if n == 1:
-			self.f = lambda x: (torch.erf(x) + 1) / 2
-		elif n == 2:
-			self.f = lambda x: x*torch.erf(x)/2 + x/2 + torch.exp(-x**2)/(2*(torch.pi**0.5))
-		else:
-			self.f = self.erf_nth_int(n)
+		self.n = n
+		recompute = True
+		filename = "act.pkl"
+		if os.path.isfile(filename):
+			with open(filename, 'rb') as f:
+				self.acts = dill.load(f)
+				if n in self.acts:
+					recompute = False
+		if recompute:
+			self.acts = self.compute_modules()
+		with open(filename, 'wb') as f:
+			dill.dump(self.acts, f)
+		self.act = self.create_activation(self.n)
 
-
-	def erf_nth_int(self, n):
+	def compute_modules(self):
+		def squeeze_output(func):
+			return lambda x: func(x=x).squeeze(-1)
+		acts = {
+			0: lambda x: torch.exp(-x**2) / torch.sqrt(torch.tensor(torch.pi)),
+			1: lambda x: (torch.erf(x) + 1) / 2,
+		}
 		x_ = sympy.Symbol('x')
-		erf0 = (sympy.functions.special.error_functions.erf(x_) + 1) / 2
-		erfi = erf0
-		for _ in range(n-1):
+		erfi = (sympy.functions.special.error_functions.erf(x_) + 1) / 2
+		for i in range(2, self.n+1):
 			erfi = sympy.integrate(erfi, x_)
-		act = sympytorch.SymPyModule(expressions=[erfi], extra_funcs={sympy.core.numbers.Pi: lambda: torch.pi})
-		f = lambda x: act(x=x).squeeze(-1)
-		return f
+			acti = sympytorch.SymPyModule(expressions=[erfi], extra_funcs={sympy.core.numbers.Pi: lambda: torch.pi})
+			acts[i] = squeeze_output(acti)
+		return acts
 
+	def create_activation(self, i):
+		if i > 0:
+			mod = self.acts[i]
+			deriv_mod = lambda x: (self.create_activation(i - 1).apply(x) if (i > 1) else self.acts[0](x))
+
+			class IntAct(torch.autograd.Function):
+				@staticmethod
+				def forward(x):
+					return mod(x)
+				@staticmethod
+				def setup_context(ctx, inputs, outputs):
+					x, = inputs
+					ctx.save_for_backward(x)
+				@staticmethod
+				def backward(ctx, grad_output):
+					x, = ctx.saved_tensors
+					dx = deriv_mod(x)
+					return grad_output * dx
+			return IntAct
+		else:
+			return self.acts[0]
 
 	def forward(self, x):
-		return self.f(x)
-
+		return self.act.apply(x)
 
 ## Tests ##
 
+def dfn(f, n):
+	df = f
+	for i in range(n):
+		df = df_dxi(df)
+	return lambda x: df(x).unsqueeze(-1)
+
+def df_dxi(f):
+	return grad(lambda x: f(x).sum())
 
 def test0():
-	from visualiser import Visualiser2D
-	vis = Visualiser2D()
-	x_ = sympy.Symbol('x')
-	erf = (sympy.functions.special.error_functions.erf(x_) + 1) / 2
-	erf_int = sympy.integrate(erf, x_)
-	act = sympytorch.SymPyModule(expressions=[erf_int], extra_funcs={sympy.core.numbers.Pi: lambda: torch.pi})
-	f = lambda x: act(x=x)
-	vis.update(f, ninputs=1, lim=[-2,2], step=0.05)
-	breakpoint()
+	from matplotlib import pyplot as plt
+	import time
+	n = 2
+	x = torch.linspace(-1, 1, 100)
+	act = IntegralActivation(n)
+	# y = act(x)
+	df5 = dfn(act, n)
+	start_time = time.time()
+	df5x = df5(x)
+	dt = time.time() - start_time
+	print(dt)
+	plt.plot(x, df5x)
+	plt.show()
 
-
-def test1():
-	from visualiser import Visualiser2D
-	vis = Visualiser2D()
-	f = IntegralActivation(1)
-	vis.update(f, ninputs=1, lim=[-2, 2], step=0.05)
-	input()
-
+def test2():
+	import time
+	model = IntegralActivation(8)
+	dmodel = dfn(model, 8)
+	x = torch.linspace(-2, 2, 10)
+	start_time = time.time()
+	dx = dmodel(x)
+	dt = time.time() - start_time
+	print(dt)
 
 if __name__ == "__main__":
-	test1()
+	test2()
