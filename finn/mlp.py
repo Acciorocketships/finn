@@ -37,50 +37,18 @@ class IntegralNetwork(nn.Module):
 		self.nets = nn.ModuleList([
 				build_mlp(input_dim, 
 						  output_dim, 
-						  nlayers=4, 
-						  midmult=4., 
-						  layer_type=LinearAbs if pos else nn.Linear, 
-						  activation=IntegralActivation if pos else nn.Mish,
+						  nlayers=4,
+						  midmult=4.,
+						  layer_type=LinearAbs if pos else nn.Linear,
+						  activation=IntegralActivation if pos else nn.ReLU,
 						  last_activation=None, 
 						  activation_kwargs={"n":input_dim}
 						  )
 			for _ in range(k)])
 
 	def forward(self, x):
-		return sum(net(x) for net in self.nets)
+		return torch.cat([net(x) for net in self.nets], dim=-1).sum(dim=-1).unsqueeze(-1)
 
-
-# class MLP(nn.Module):
-# 	def __init__(
-# 		self,
-# 		layer_sizes,
-# 		batchnorm=False,
-# 		layernorm=False,
-# 		monotonic=False,
-# 		activation=nn.Mish,
-# 		last_activation=None,
-# 		activation_kwargs={},
-# 	):
-# 		super(MLP, self).__init__()
-# 		layers = []
-# 		for i in range(len(layer_sizes) - 1):
-# 			if monotonic:
-# 				layers.append(LinearAbs(layer_sizes[i], layer_sizes[i + 1]))
-# 			else:
-# 				layers.append(nn.Linear(layer_sizes[i], layer_sizes[i + 1]))
-# 			if i < len(layer_sizes) - 2:
-# 				if batchnorm:
-# 					layers.append(nn.BatchNorm(layer_sizes[i + 1]))
-# 				if layernorm:
-# 					layers.append(nn.LayerNorm(layer_sizes[i + 1]))
-# 				layers.append(activation(**activation_kwargs))
-# 			elif i == len(layer_sizes) - 2:
-# 				if last_activation is not None:
-# 					layers.append(last_activation(**activation_kwargs))
-# 		self.net = nn.Sequential(*layers)
-
-# 	def forward(self, X):
-# 		return self.net(X)
 
 class MLP(nn.Module):
 	def __init__(

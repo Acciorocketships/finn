@@ -1,30 +1,43 @@
 import torch
 from finn.mlp import IntegralNetwork
+from torch.func import grad
 import time
 
 class Finn(torch.nn.Module):
 
-	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=None, area=1.):
+	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1.):
 		'''
 		:param dim: dimension of the input (output dim is 1)
 		:param pos: if true, then the constraint f(x) > 0 is added
 		:param x_lim_lower: lower limit of integration for x (default is -inf)
 		:param x_lim_upper: upper limit of integration for x (default is inf)
 		:param condition: function that takes in area, and returns whether or not to apply transformation (bool)
-		                  for example, an equality constraint will have condition = lambda area: True
 		                  for ∫f(x) <= eps, it would be condition = lambda area: area > eps
-		                  to apply no condition, set condition = None (equivalent but more efficient than lambda area: False)
+		                  set to True for an equality constraint
+		                  set to False for no constraints on the integral
 		:param area: the area to set the region to if the condition is true. for the inequality example above, area = eps
 		'''
 		super().__init__()
 		self.dim = dim
-		self.x_lim_lower = torch.as_tensor(x_lim_lower)
-		self.x_lim_upper = torch.as_tensor(x_lim_upper)
-		self.pos = False
+		self.x_lim_lower = torch.as_tensor(x_lim_lower) if (x_lim_lower is not None) else -torch.ones(dim)
+		self.x_lim_upper = torch.as_tensor(x_lim_upper) if (x_lim_lower is not None) else torch.ones(dim)
 		self.area = area
 		self.condition = condition
 		self.F = IntegralNetwork(self.dim, 1, pos=pos)
+		self.f = self.build_f()
 		self.eval_points, self.eval_sign = self.get_eval_points()
+
+
+	def build_f(self):
+		df = self.F
+		for i in range(self.dim):
+			df = self.df_dxi(df, i)
+		f = lambda x: df(x).unsqueeze(-1)
+		return f
+
+
+	def df_dxi(self, f, i):
+		return lambda y: grad(lambda x: f(x).sum())(y)[...,i]
 
 
 	def int(self, x):
@@ -32,10 +45,11 @@ class Finn(torch.nn.Module):
 
 
 	def forward(self, x):
+		# out = self.f(x)
 		out = self.differentiate(x)
-		if self.condition is not None:
+		if self.condition:
 			actual_area = self.calc_area()
-			if self.condition(actual_area):
+			if (self.condition==True) or self.condition(actual_area):
 				out *= self.area / actual_area
 		return out
 
@@ -43,11 +57,13 @@ class Finn(torch.nn.Module):
 	def differentiate(self, x):
 		x.requires_grad_(True)
 		xi = [x[...,i] for i in range(x.shape[-1])]
-		y = self.F(torch.stack(xi, dim=-1))
-		last_dy = y
+		dyi = self.F(torch.stack(xi, dim=-1))
 		for i in range(self.dim):
-			last_dy = torch.autograd.grad(last_dy.sum(), xi[i], retain_graph=True, create_graph=True)[0]
-		return last_dy
+			start_time = time.time()
+			dyi = torch.autograd.grad(dyi.sum(), xi[i], retain_graph=True, create_graph=True, materialize_grads=True)[0]
+			grad_time = time.time() - start_time
+			print(grad_time)
+		return dyi
 
 
 	def calc_area(self):

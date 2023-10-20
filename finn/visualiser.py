@@ -9,7 +9,7 @@ class Visualiser:
 	def __init__(self, ax=None):
 		self.ax = ax
 		if ax is None:
-			fig = plt.figure()
+			fig, self.ax = plt.subplots()
 		plt.ion()
 		plt.show()
 
@@ -41,16 +41,19 @@ class Visualiser:
 
 		elif ninputs == 1:
 			if self.ax is None:
-				self.ax = plt.axes()
+				self.ax = plt.gca()
 			x = torch.arange(lim[0],lim[1],step)
 			x = x.float().view(-1, 1)
 			z = func(x)
 			x = x.detach().numpy()
-			z = z.view(x.shape).detach().numpy()
+			if isinstance(z, torch.Tensor):
+				z = z.view(x.shape).detach().numpy()
 			if transparent:
 				self.ax.plot(x, z, 'b:', label=label)
 			else:
 				self.ax.plot(x, z, 'r', label=label)
+			plt.xlim([lim[0], lim[1]])
+			plt.ylim([lim[2], lim[3]])
 
 		plt.draw()
 		plt.pause(0.01)
