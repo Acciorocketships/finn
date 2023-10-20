@@ -9,7 +9,7 @@ class Visualiser:
 	def __init__(self, ax=None):
 		self.ax = ax
 		if ax is None:
-			fig, self.ax = plt.subplots()
+			fig = plt.figure()
 		plt.ion()
 		plt.show()
 
