@@ -35,9 +35,7 @@ class IntegralActivation(torch.nn.Module):
 		x_ = sympy.Symbol('x')
 		erfi = (sympy.functions.special.error_functions.erf(x_) + 1) / 2
 		for i in range(2, self.n+1):
-			print("integrating", i)
 			erfi = sympy.integrate(erfi, x_)
-			print("simplifying", i)
 			erfi_simp = erfi.simplify()
 			acti = sympytorch.SymPyModule(expressions=[erfi_simp], extra_funcs={sympy.core.numbers.Pi: lambda: torch.pi})
 			acts[i] = squeeze_output(acti)
@@ -90,7 +88,6 @@ def test0():
 	start_time = time.time()
 	df5x = df5(x)
 	dt = time.time() - start_time
-	print(dt)
 	plt.plot(x, df5x)
 	plt.show()
 
@@ -102,7 +99,7 @@ def test2():
 	start_time = time.time()
 	dx = dmodel(x)
 	dt = time.time() - start_time
-	print(dt)
+
 
 if __name__ == "__main__":
 	test2()

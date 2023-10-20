@@ -1,4 +1,5 @@
 import time
+
 import torch
 from torch.func import grad
 
@@ -68,7 +69,7 @@ class Finn(torch.nn.Module):
 				start_time = time.time()
 				dyi = torch.autograd.grad(dyi.sum(), xi[i], retain_graph=True, create_graph=True, materialize_grads=True)[0]
 				grad_time = time.time() - start_time
-				print(grad_time)
+
 		return dyi
 
 
