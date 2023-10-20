@@ -10,7 +10,7 @@ class IntegralActivation(torch.nn.Module):
 		super().__init__()
 		self.n = n
 		recompute = True
-		filename = "act.pkl"
+		filename = str(Path(os.path.dirname(os.path.realpath(__file__))) / Path("act.pkl"))
 		if os.path.isfile(filename):
 			with open(filename, 'rb') as f:
 				self.acts = dill.load(f)
