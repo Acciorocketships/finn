@@ -22,11 +22,11 @@ class Finn(torch.nn.Module):
 		'''
 		super().__init__()
 		self.dim = dim
-		self.x_lim_lower = torch.as_tensor(x_lim_lower) if (x_lim_lower is not None) else -torch.ones(dim)
-		self.x_lim_upper = torch.as_tensor(x_lim_upper) if (x_lim_lower is not None) else torch.ones(dim)
+		self.device = device
+		self.x_lim_lower = torch.as_tensor(x_lim_lower,device=self.device) if (x_lim_lower is not None) else -torch.ones(dim,device=self.device)
+		self.x_lim_upper = torch.as_tensor(x_lim_upper,device=self.device) if (x_lim_lower is not None) else torch.ones(dim,device=self.device)
 		self.area = area
 		self.condition = condition
-		self.device = device
 		self.F = IntegralNetwork(self.dim, 1, pos=pos, device=device)
 		self.f = self.build_f()
 		self.eval_points, self.eval_sign = self.get_eval_points()
