@@ -1,11 +1,14 @@
-import torch
-from finn.mlp import IntegralNetwork
-from torch.func import grad
 import time
+
+import torch
+from torch.func import grad
+
+from finn.mlp import IntegralNetwork
+
 
 class Finn(torch.nn.Module):
 
-	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1.):
+	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., device="cpu"):
 		'''
 		:param dim: dimension of the input (output dim is 1)
 		:param pos: if true, then the constraint f(x) > 0 is added
@@ -23,7 +26,8 @@ class Finn(torch.nn.Module):
 		self.x_lim_upper = torch.as_tensor(x_lim_upper) if (x_lim_lower is not None) else torch.ones(dim)
 		self.area = area
 		self.condition = condition
-		self.F = IntegralNetwork(self.dim, 1, pos=pos)
+		self.device = device
+		self.F = IntegralNetwork(self.dim, 1, pos=pos, device=device)
 		self.f = self.build_f()
 		self.eval_points, self.eval_sign = self.get_eval_points()
 
@@ -55,14 +59,14 @@ class Finn(torch.nn.Module):
 
 
 	def differentiate(self, x):
-		x.requires_grad_(True)
-		xi = [x[...,i] for i in range(x.shape[-1])]
-		dyi = self.F(torch.stack(xi, dim=-1))
-		for i in range(self.dim):
-			start_time = time.time()
-			dyi = torch.autograd.grad(dyi.sum(), xi[i], retain_graph=True, create_graph=True, materialize_grads=True)[0]
-			grad_time = time.time() - start_time
-			print(grad_time)
+		with torch.enable_grad():
+			x.requires_grad_(True)
+			xi = [x[...,i] for i in range(x.shape[-1])]
+			dyi = self.F(torch.stack(xi, dim=-1))
+			for i in range(self.dim):
+				start_time = time.time()
+				dyi = torch.autograd.grad(dyi.sum(), xi[i], retain_graph=True, create_graph=True, materialize_grads=True)[0]
+				grad_time = time.time() - start_time
 		return dyi
 
 
@@ -82,18 +86,18 @@ class Finn(torch.nn.Module):
 			return None, None
 		if self.x_lim_lower is None:
 			pts = self.x_lim_upper.unsqueeze(0)
-			eval_sign = torch.tensor([1])
+			eval_sign = torch.tensor([1], device=self.device)
 			return pts, eval_sign
 		if self.x_lim_upper is None:
 			pts = self.x_lim_lower.unsqueeze(0)
-			eval_sign = torch.tensor([-1])
+			eval_sign = torch.tensor([-1], device=self.device)
 			return pts, eval_sign
-		pts = torch.zeros(2**self.dim, self.dim)
-		eval_sign = torch.ones(2**self.dim)
+		pts = torch.zeros(2**self.dim, self.dim, device=self.device)
+		eval_sign = torch.ones(2**self.dim, device=self.device)
 		for i in range(self.dim):
-			xi_lim = torch.tensor([self.x_lim_lower[i], self.x_lim_upper[i]])
+			xi_lim = torch.tensor([self.x_lim_lower[i], self.x_lim_upper[i]], device=self.device)
 			rep_len = int(2 ** i)
 			rep_int_len = int(pts.shape[0] / 2 / rep_len)
 			pts[:,i] = xi_lim.repeat_interleave(rep_int_len).repeat(rep_len)
-			eval_sign *= torch.tensor([-1, 1]).repeat_interleave(rep_int_len).repeat(rep_len)
+			eval_sign *= torch.tensor([-1, 1], device=self.device).repeat_interleave(rep_int_len).repeat(rep_len)
 		return pts, eval_sign

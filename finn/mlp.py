@@ -2,8 +2,9 @@ import math
 
 import torch
 import torch.nn as nn
-from finn.activation import IntegralActivation
 from torch import Tensor
+
+from finn.activation import IntegralActivation
 
 
 def build_mlp(input_dim, output_dim, nlayers=1, midmult=1., **kwargs):
@@ -32,16 +33,17 @@ def layergen(input_dim, output_dim, nlayers=1, hidden_dim=None, midmult=1.0):
 
 class IntegralNetwork(nn.Module):
 
-	def __init__(self, input_dim, output_dim, k=2, pos=False):
+	def __init__(self, input_dim, output_dim,device, k=2, pos=False):
 		super().__init__()
 		self.nets = nn.ModuleList([
-				build_mlp(input_dim, 
-						  output_dim, 
+				build_mlp(input_dim,
+						  output_dim,
 						  nlayers=3,
 						  midmult=4.,
+						  device=device,
 						  layer_type=LinearAbs if pos else nn.Linear,
 						  activation=IntegralActivation if pos else nn.ReLU,
-						  last_activation=None, 
+						  last_activation=None,
 						  activation_kwargs={"n":input_dim}
 						  )
 			for _ in range(k)])
@@ -54,6 +56,7 @@ class MLP(nn.Module):
 	def __init__(
 		self,
 		layer_sizes,
+		device,
 		activation=nn.Mish,
 		last_activation=None,
 		layer_type=nn.Linear,
@@ -66,7 +69,7 @@ class MLP(nn.Module):
 		else:
 			activation_func = activation()
 		for i in range(len(layer_sizes) - 1):
-			layers.append(layer_type(layer_sizes[i], layer_sizes[i + 1]))
+			layers.append(layer_type(layer_sizes[i], layer_sizes[i + 1],device=device))
 			if i < len(layer_sizes) - 2:
 				layers.append(activation_func)
 			elif i == len(layer_sizes) - 2:
