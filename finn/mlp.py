@@ -32,7 +32,7 @@ def layergen(input_dim, output_dim, nlayers=1, hidden_dim=None, midmult=1.0):
 
 class IntegralNetwork(nn.Module):
 
-	def __init__(self, input_dim, output_dim, nlayers=2, k=4, pos=False, device=torch.device('cpu')):
+	def __init__(self, input_dim, output_dim, nlayers=2, k=4, pos=False, device='cpu'):
 		super().__init__()
 		self.nets = nn.ModuleList([
 				build_mlp(input_dim,
@@ -59,7 +59,7 @@ class MLP(nn.Module):
 		last_activation=None,
 		layer_type=nn.Linear,
 		activation_kwargs={},
-		device=torch.device('cpu'),
+		device='cpu',
 	):
 		super(MLP, self).__init__()
 		layers = []

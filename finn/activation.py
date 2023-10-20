@@ -35,8 +35,11 @@ class IntegralActivation(torch.nn.Module):
 		x_ = sympy.Symbol('x')
 		erfi = (sympy.functions.special.error_functions.erf(x_) + 1) / 2
 		for i in range(2, self.n+1):
+			print("integrating", i)
 			erfi = sympy.integrate(erfi, x_)
-			acti = sympytorch.SymPyModule(expressions=[erfi], extra_funcs={sympy.core.numbers.Pi: lambda: torch.pi})
+			print("simplifying", i)
+			erfi_simp = erfi.simplify()
+			acti = sympytorch.SymPyModule(expressions=[erfi_simp], extra_funcs={sympy.core.numbers.Pi: lambda: torch.pi})
 			acts[i] = squeeze_output(acti)
 		return acts
 

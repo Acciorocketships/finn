@@ -1,5 +1,4 @@
 import time
-
 import torch
 from torch.func import grad
 
@@ -8,7 +7,7 @@ from finn.mlp import IntegralNetwork
 
 class Finn(torch.nn.Module):
 
-	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., device=torch.device('cpu')):
+	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., device='cpu'):
 		'''
 		:param dim: dimension of the input (output dim is 1)
 		:param pos: if true, then the constraint f(x) > 0 is added
@@ -69,6 +68,7 @@ class Finn(torch.nn.Module):
 				start_time = time.time()
 				dyi = torch.autograd.grad(dyi.sum(), xi[i], retain_graph=True, create_graph=True, materialize_grads=True)[0]
 				grad_time = time.time() - start_time
+				print(grad_time)
 		return dyi
 
 

@@ -19,7 +19,7 @@ if __name__ == "__main__":
     init_time = time.time() - init_start_time
     print(f"It took {init_time}s to init FINN")
 
-    data = torch.randn(200, dim)
+    data = torch.randn(1000, dim)
 
     forward_start_time = time.time()
     out = finn(data)
