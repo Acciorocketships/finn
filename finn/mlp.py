@@ -32,12 +32,12 @@ def layergen(input_dim, output_dim, nlayers=1, hidden_dim=None, midmult=1.0):
 
 class IntegralNetwork(nn.Module):
 
-	def __init__(self, input_dim, output_dim, k=4, pos=False):
+	def __init__(self, input_dim, output_dim, k=2, pos=False):
 		super().__init__()
 		self.nets = nn.ModuleList([
 				build_mlp(input_dim, 
 						  output_dim, 
-						  nlayers=4,
+						  nlayers=3,
 						  midmult=4.,
 						  layer_type=LinearAbs if pos else nn.Linear,
 						  activation=IntegralActivation if pos else nn.ReLU,
