@@ -6,8 +6,8 @@ def run():
 
 	# Init
 	dim = 2
-	x_lim_lower = torch.tensor([-3,-3])
-	x_lim_upper = torch.tensor([3,3])
+	x_lim_lower = -5 * torch.ones(2)
+	x_lim_upper = 5 * torch.ones(2)
 	vis_lower = x_lim_lower
 	vis_upper = x_lim_upper
 	vis_step = 0.1
@@ -31,6 +31,7 @@ def run():
 		return g
 	g0 = create_g(1, 1., 1., 1., 1.)
 	g1 = create_g(1, 1., 1., -2., 0.)
+	g1 = create_g(0.5, 0.5, 1., -1., 1.)
 	g = lambda x: g0(x) + g1(x)
 
 	# Training Init

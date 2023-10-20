@@ -8,7 +8,7 @@ from finn.mlp import IntegralNetwork
 
 class Finn(torch.nn.Module):
 
-	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., device="cpu"):
+	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., device=torch.device('cpu')):
 		'''
 		:param dim: dimension of the input (output dim is 1)
 		:param pos: if true, then the constraint f(x) > 0 is added
@@ -23,8 +23,10 @@ class Finn(torch.nn.Module):
 		super().__init__()
 		self.dim = dim
 		self.device = device
-		self.x_lim_lower = torch.as_tensor(x_lim_lower,device=self.device) if (x_lim_lower is not None) else -torch.ones(dim,device=self.device)
-		self.x_lim_upper = torch.as_tensor(x_lim_upper,device=self.device) if (x_lim_lower is not None) else torch.ones(dim,device=self.device)
+		self.x_lim_lower = torch.as_tensor(x_lim_lower,device=self.device) if (x_lim_lower is not None) \
+							else -torch.ones(dim, device=self.device)
+		self.x_lim_upper = torch.as_tensor(x_lim_upper,device=self.device) if (x_lim_lower is not None) \
+							else torch.ones(dim, device=self.device)
 		self.area = area
 		self.condition = condition
 		self.F = IntegralNetwork(self.dim, 1, pos=pos, device=device)
