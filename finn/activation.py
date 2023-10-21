@@ -24,6 +24,8 @@ class IntegralActivation(torch.nn.Module):
 		with open(filename, 'wb') as f:
 			dill.dump(self.acts, f)
 		self.act = self.create_activation(self.n)
+		self.backward_vals = {}
+		self.register_backward_hook(self.backward_hook)
 
 	def compute_modules(self):
 		def squeeze_output(func):
@@ -57,7 +59,13 @@ class IntegralActivation(torch.nn.Module):
 				@staticmethod
 				def backward(ctx, grad_output):
 					x, = ctx.saved_tensors
-					dx = deriv_mod(x)
+					if i in self.backward_vals:
+						dx = self.backward_vals[i]
+						# real_dx = deriv_mod(x)
+						# assert (dx-real_dx).norm() == 0
+					else:
+						dx = deriv_mod(x)
+						self.backward_vals[i] = dx
 					return grad_output * dx
 			return IntAct
 		else:
@@ -65,6 +73,12 @@ class IntegralActivation(torch.nn.Module):
 
 	def forward(self, x):
 		return self.act.apply(x)
+
+	def clear_backward_vals(self):
+		self.backward_vals = {}
+
+	def backward_hook(self, module, grad_input, grad_output):
+		self.clear_backward_vals()
 
 ## Tests ##
 

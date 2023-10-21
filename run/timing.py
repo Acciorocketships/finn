@@ -10,6 +10,7 @@ if __name__ == "__main__":
     finn = finn.Finn(
         dim=dim,
         area=0.1,
+        nlayers=2,
         pos=True,
         x_lim_lower=-1 * torch.ones(dim),
         x_lim_upper=1 * torch.ones(dim),
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     init_time = time.time() - init_start_time
     print(f"It took {init_time}s to init FINN")
 
-    data = torch.randn(1000, dim)
+    data = torch.randn(200, dim)
 
     forward_start_time = time.time()
     out = finn(data)
