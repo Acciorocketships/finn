@@ -43,37 +43,6 @@ class IntegralActivation(torch.nn.Module):
 			acts[i] = squeeze_output(acti)
 		return acts
 
-	# def create_activation(self, i):
-	# 	if i > 0:
-	# 		mod = self.acts[i]
-	# 		deriv_mod = lambda x: (self.create_activation(i - 1).apply(x) if (i > 1) else self.acts[0](x))
-	#
-	# 		class IntAct(torch.autograd.Function):
-	# 			@staticmethod
-	# 			def forward(x):
-	# 				return mod(x)
-	# 			@staticmethod
-	# 			def setup_context(ctx, inputs, outputs):
-	# 				x, = inputs
-	# 				ctx.save_for_backward(x)
-	# 			@staticmethod
-	# 			def backward(ctx, grad_output):
-	# 				x, = ctx.saved_tensors
-	# 				if i in self.backward_vals:
-	# 					dx = self.backward_vals[i]
-	# 					real_dx = deriv_mod(x)
-	# 					try:
-	# 						assert (dx-real_dx).norm() == 0
-	# 					except:
-	# 						breakpoint()
-	# 				else:
-	# 					dx = deriv_mod(x)
-	# 					self.backward_vals[i] = dx
-	# 				return grad_output * dx
-	# 		return IntAct
-	# 	else:
-	# 		return self.acts[0]
-
 	def create_activation(self, i):
 		if i > 0:
 			mod = self.acts[i]
