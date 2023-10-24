@@ -32,7 +32,7 @@ def layergen(input_dim, output_dim, nlayers=1, hidden_dim=None, midmult=1.0):
 
 class IntegralNetwork(nn.Module):
 
-	def __init__(self, input_dim, output_dim, nlayers=2, k=4, pos=False, device='cpu'):
+	def __init__(self, input_dim, output_dim, nlayers=3, k=1, pos=False, device='cpu'):
 		super().__init__()
 		self.nets = nn.ModuleList([
 				build_mlp(input_dim,
@@ -46,9 +46,19 @@ class IntegralNetwork(nn.Module):
 						  activation_kwargs={"n":input_dim}
 						  )
 			for _ in range(k)])
+		self.acts = []
+		for i in range(k):
+			for layer in self.nets[i].net:
+				if isinstance(layer, IntegralActivation):
+					self.acts.append(layer)
 
 	def forward(self, x):
 		return torch.cat([net(x) for net in self.nets], dim=-1).sum(dim=-1).unsqueeze(-1)
+
+	def set_forward_mode(self, mode):
+		for act in self.acts:
+			act.forward_mode = mode
+			act.clear_backward_vals()
 
 
 class MLP(nn.Module):
@@ -63,13 +73,13 @@ class MLP(nn.Module):
 	):
 		super(MLP, self).__init__()
 		layers = []
-		if activation == IntegralActivation:
-			activation_func = activation(**activation_kwargs)
-		else:
-			activation_func = activation()
 		for i in range(len(layer_sizes) - 1):
 			layers.append(layer_type(layer_sizes[i], layer_sizes[i + 1], device=device))
 			if i < len(layer_sizes) - 2:
+				if activation == IntegralActivation:
+					activation_func = activation(**activation_kwargs)
+				else:
+					activation_func = activation()
 				layers.append(activation_func)
 			elif i == len(layer_sizes) - 2:
 				if last_activation is not None:

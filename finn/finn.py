@@ -8,7 +8,7 @@ from finn.mlp import IntegralNetwork
 
 class Finn(torch.nn.Module):
 
-	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., device='cpu'):
+	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., nlayers=2, device='cpu'):
 		'''
 		:param dim: dimension of the input (output dim is 1)
 		:param pos: if true, then the constraint f(x) > 0 is added
@@ -29,7 +29,7 @@ class Finn(torch.nn.Module):
 							else torch.ones(dim, device=self.device)
 		self.area = area
 		self.condition = condition
-		self.F = IntegralNetwork(self.dim, 1, pos=pos, device=device)
+		self.F = IntegralNetwork(self.dim, 1, nlayers=nlayers, pos=pos, device=device)
 		self.f = self.build_f()
 		self.eval_points, self.eval_sign = self.get_eval_points()
 
@@ -61,15 +61,17 @@ class Finn(torch.nn.Module):
 
 
 	def differentiate(self, x):
+		self.F.set_forward_mode(True)
 		with torch.enable_grad():
 			x.requires_grad_(True)
 			xi = [x[...,i] for i in range(x.shape[-1])]
 			dyi = self.F(torch.stack(xi, dim=-1))
 			for i in range(self.dim):
-				start_time = time.time()
+				# start_time = time.time()
 				dyi = torch.autograd.grad(dyi.sum(), xi[i], retain_graph=True, create_graph=True, materialize_grads=True)[0]
-				grad_time = time.time() - start_time
-
+				# grad_time = time.time() - start_time
+				# print(grad_time)
+		self.F.set_forward_mode(False)
 		return dyi
 
 
