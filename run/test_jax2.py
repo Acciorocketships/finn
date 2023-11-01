@@ -9,7 +9,7 @@ import time
 class IntegralModel(hk.Module):
 	def __init__(self):
 		super().__init__(name="IntegralModel")
-		self.net = hk.nets.MLP(output_sizes=[16,16,8,1], activation=jax.nn.relu, name='net')
+		self.net = hk.nets.MLP(output_sizes=[16,16,8,1], activation=jnp.tanh, name='net')
 
 	def __call__(self, x):
 		return self.net(x)
@@ -43,7 +43,7 @@ def diff_f(params, model, dims):
 def run():
 
 	batch = 256
-	dim = 10
+	dim = 7
 	model = hk.without_apply_rng(hk.transform(model_forward))
 	rng = jax.random.PRNGKey(seed=0)
 	params = model.init(rng, jnp.ones(dim))
