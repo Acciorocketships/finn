@@ -51,6 +51,7 @@ class IntegralNetwork(nn.Module):
 			for layer in self.nets[i].net:
 				if isinstance(layer, IntegralActivation):
 					self.acts.append(layer)
+		self.init_weights()
 
 	def forward(self, x):
 		return torch.cat([net(x) for net in self.nets], dim=-1).sum(dim=-1).unsqueeze(-1)
@@ -59,6 +60,12 @@ class IntegralNetwork(nn.Module):
 		for act in self.acts:
 			act.forward_mode = mode
 			act.clear_backward_vals()
+
+	def init_weights(self):
+		def helper(m):
+			if isinstance(m, nn.Linear):
+				torch.nn.init.kaiming_normal(m.weight)
+		self.nets.apply(helper)
 
 
 class MLP(nn.Module):
