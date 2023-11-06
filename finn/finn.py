@@ -1,5 +1,3 @@
-import time
-
 import torch
 from torch.func import grad
 
@@ -27,6 +25,8 @@ class Finn(torch.nn.Module):
 							else -torch.ones(dim, device=self.device)
 		self.x_lim_upper = torch.as_tensor(x_lim_upper,device=self.device) if (x_lim_lower is not None) \
 							else torch.ones(dim, device=self.device)
+		assert self.x_lim_upper.shape == self.x_lim_lower.shape
+		assert self.x_lim_upper.shape == (self.dim,)
 		self.area = area
 		self.condition = condition
 		self.F = IntegralNetwork(self.dim, 1, nlayers=nlayers, pos=pos, device=device)
