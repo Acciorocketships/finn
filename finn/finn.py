@@ -6,7 +6,7 @@ from finn.mlp import IntegralNetwork
 
 class Finn(torch.nn.Module):
 
-	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., nlayers=2, device='cpu'):
+	def __init__(self, dim, pos=False, x_lim_lower=None, x_lim_upper=None, condition=True, area=1., nlayers=2, k=1, device='cpu'):
 		'''
 		:param dim: dimension of the input (output dim is 1)
 		:param pos: if true, then the constraint f(x) > 0 is added
@@ -29,7 +29,7 @@ class Finn(torch.nn.Module):
 		assert self.x_lim_upper.shape == (self.dim,)
 		self.area = area
 		self.condition = condition
-		self.F = IntegralNetwork(self.dim, 1, nlayers=nlayers, pos=pos, device=device)
+		self.F = IntegralNetwork(self.dim, 1, nlayers=nlayers, k=k, pos=pos, device=device)
 		self.f = self.build_f()
 		self.eval_points, self.eval_sign = self.get_eval_points()
 
@@ -55,7 +55,7 @@ class Finn(torch.nn.Module):
 		out = self.differentiate(x)
 		if self.condition:
 			actual_area = self.calc_area()
-			if (self.condition==True) or self.condition(actual_area):
+			if (self.condition is True) or self.condition(actual_area):
 				out *= self.area / actual_area
 		return out
 

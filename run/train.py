@@ -17,6 +17,7 @@ def run():
 		pos=True,
 		area=area,
 		nlayers=2,
+		k=2,
 		condition=lambda a: a > area,
 		x_lim_lower=x_lim_lower, 
 		x_lim_upper=x_lim_upper, 

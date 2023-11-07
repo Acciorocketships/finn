@@ -65,6 +65,7 @@ class IntegralNetwork(nn.Module):
 		def helper(m):
 			if isinstance(m, nn.Linear):
 				torch.nn.init.kaiming_normal(m.weight)
+				m.bias.data.fill_(0)
 		self.nets.apply(helper)
 
 
