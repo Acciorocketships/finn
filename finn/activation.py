@@ -66,7 +66,7 @@ class IntegralActivation(torch.nn.Module):
 						# assert dx.shape == real_dx.shape
 						# assert (dx-real_dx).norm() == 0
 					else:
-						dx = deriv_mod(x)
+						dx = deriv_mod(x.double()).type(x.dtype)
 						IntAct.backward_vals[i] = dx
 					return grad_output * dx
 			return IntAct
