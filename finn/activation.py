@@ -52,7 +52,7 @@ class IntegralActivation(torch.nn.Module):
 				backward_vals = {}
 				@staticmethod
 				def forward(x):
-					return mod(x)
+					return mod(x.double()).type(x.dtype)
 				@staticmethod
 				def setup_context(ctx, inputs, outputs):
 					x, = inputs
