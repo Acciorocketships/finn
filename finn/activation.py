@@ -21,8 +21,8 @@ class IntegralActivation(torch.nn.Module):
 					recompute = False
 		if recompute:
 			self.acts = self.compute_modules()
-		with open(filename, 'wb') as f:
-			dill.dump(self.acts, f)
+			with open(filename, 'wb') as f:
+				dill.dump(self.acts, f)
 		self.act = self.create_activation(self.n)
 		self.forward_mode = False
 		self.register_backward_hook(self.backward_hook)
