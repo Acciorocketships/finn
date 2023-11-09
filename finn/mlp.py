@@ -1,9 +1,9 @@
 import math
+
 import torch
 import torch.nn as nn
-from torch import Tensor
-
 from finn.activation import IntegralActivation
+from torch import Tensor
 
 
 def build_mlp(input_dim, output_dim, nlayers=1, midmult=1., **kwargs):
@@ -64,7 +64,7 @@ class IntegralNetwork(nn.Module):
 	def init_weights(self):
 		def helper(m):
 			if isinstance(m, nn.Linear):
-				torch.nn.init.kaiming_normal(m.weight)
+				torch.nn.init.kaiming_normal_(m.weight)
 				m.bias.data.fill_(0)
 		self.nets.apply(helper)
 
