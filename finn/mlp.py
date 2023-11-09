@@ -44,17 +44,17 @@ class IntegralNetwork(nn.Module):
 						  activation=IntegralActivation if pos else nn.Mish,
 						  last_activation=None,
 						  activation_kwargs={"n":input_dim}
-						  )
+						  ).double()
 			for _ in range(k)])
 		self.acts = []
 		for i in range(k):
 			for layer in self.nets[i].net:
 				if isinstance(layer, IntegralActivation):
 					self.acts.append(layer)
-		self.init_weights()
+		# self.init_weights()
 
 	def forward(self, x):
-		return torch.cat([net(x) for net in self.nets], dim=-1).sum(dim=-1).unsqueeze(-1)
+		return torch.cat([net(x.double()).type(x.dtype) for net in self.nets], dim=-1).sum(dim=-1).unsqueeze(-1)
 
 	def set_forward_mode(self, mode):
 		for act in self.acts:
