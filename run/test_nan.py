@@ -1,8 +1,9 @@
 import torch
 from finn import Finn
+from matplotlib import pyplot as plt
 
 def run():
-        torch.manual_seed(3)
+        # torch.manual_seed(3)
 
         x = torch.tensor([[0.2445, 1.7579, -0.4431, 0.8229],
                 [-0.1701, 1.5750, -0.8577, 0.6400],
@@ -142,7 +143,13 @@ def run():
         )
 
         y = f(x)
+
         print(y)
+
+        # Y = f.F(x)
+        # for i in range(x.shape[-1]):
+        #         plt.scatter(x[:,i].detach(), y.detach())
+        # plt.show()
 
 if __name__ == "__main__":
         run()

@@ -16,7 +16,7 @@ def run():
 		dim=dim, 
 		pos=True,
 		area=area,
-		nlayers=2,
+		nlayers=3,
 		k=2,
 		condition=lambda a: a > area,
 		x_lim_lower=x_lim_lower, 
@@ -55,7 +55,6 @@ def run():
 		loss.backward()
 		optim.step()
 
-		print(loss)
 		if it % 50 == 0:
 			vis.clear()
 			vis.update(f, ninputs=2, visdim=[0, 1], lim=[vis_lower[0],vis_upper[0],vis_lower[1],vis_upper[1]], step=vis_step)

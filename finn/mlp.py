@@ -51,7 +51,7 @@ class IntegralNetwork(nn.Module):
 			for layer in self.nets[i].net:
 				if isinstance(layer, IntegralActivation):
 					self.acts.append(layer)
-		# self.init_weights()
+		self.init_weights()
 
 	def forward(self, x):
 		return torch.cat([net(x.double()).type(x.dtype) for net in self.nets], dim=-1).sum(dim=-1).unsqueeze(-1)
@@ -65,7 +65,8 @@ class IntegralNetwork(nn.Module):
 		def helper(m):
 			if isinstance(m, nn.Linear):
 				torch.nn.init.kaiming_normal_(m.weight)
-				m.bias.data.fill_(0)
+				m.weight.data = m.weight / 2
+				# m.bias.data.fill_(0)
 		self.nets.apply(helper)
 
 
@@ -103,4 +104,5 @@ class LinearAbs(nn.Linear):
 		super().__init__(*args, **kwargs)
 
 	def forward(self, input: Tensor) -> Tensor:
-		return nn.functional.linear(input, torch.abs(self.weight), self.bias)
+		out = nn.functional.linear(input, torch.abs(self.weight), self.bias)
+		return out

@@ -4,7 +4,7 @@ import torch
 
 def run1():
 	f = Finn(
-			dim=1, 
+			dim=1,
 			area=1.,
 			pos=False,
 			condition=None,
