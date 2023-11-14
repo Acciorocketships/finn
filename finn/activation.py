@@ -40,7 +40,6 @@ class IntegralActivation(torch.nn.Module):
 			erfi = sympy.integrate(erfi, x_)
 			c_offset = sympy.limit(erfi, x_, -float('inf'))
 			erfi = erfi - c_offset
-			print(i)
 			# erfi_simp = erfi.simplify()
 			# sympy.pprint(erfi)
 			# sympy.pprint(erfi_simp)
