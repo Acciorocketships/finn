@@ -1,7 +1,6 @@
 import torch
-from torch.func import grad
-
 from finn.mlp import IntegralNetwork
+from torch.func import grad
 
 
 class Finn(torch.nn.Module):
@@ -71,6 +70,8 @@ class Finn(torch.nn.Module):
 				dyi = torch.autograd.grad(dyi.sum(), xi[i], retain_graph=True, create_graph=True, materialize_grads=True)[0]
 				# grad_time = time.time() - start_time
 				# print(grad_time)
+		if not torch.is_grad_enabled():
+			dyi = dyi.detach()
 		self.F.set_forward_mode(False)
 		return dyi
 
